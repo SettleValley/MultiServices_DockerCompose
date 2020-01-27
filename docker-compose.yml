@@ -1,0 +1,60 @@
+version: '3'
+services:
+    nginx:
+        build: './images/nginx'
+        container_name: production_nginx
+        restart: always
+        volumes:
+            - ./nginx:/etc/nginx/
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            # - ./nginx/cache/:/etc/nginx/cache
+            # - /etc/letsenscrypt/:/etc/letsencrypt/
+        ports: 
+            - 5000:80
+        links: 
+            - wordpress:wordpress
+            - django:django
+            # - 443:443
+    ## Database MYSQL
+    db:
+        image: mysql:latest
+        container_name: mysql_container
+        restart: always
+        volumes: 
+            - ./mysql-data:/var/lib/mysql
+            # - ./db.sql:/docker-entrypoint-initdb.d/dump.sql
+        environment: 
+            MYSQL_ROOT_PASSWORD: bluetide
+            MYSQL_DATABASE: espaciocivico_db
+            MYSQL_USER: bluetide
+            MYSQL_PASSWORD: bluetide
+
+    ## Wordpress First APP
+    wordpress:
+        image: wordpress:latest
+        container_name: wordpress_container
+        restart: always
+        depends_on: 
+            - db
+        links:
+            - db
+        expose: 
+            - "80"
+        environment: 
+            WORDPRESS_DB_HOST: db:3306
+            WORDPRESS_DB_USER: bluetide
+            WORDPRESS_DB_NAME: espaciocivico_db
+            WORDPRESS_DB_PASSWORD: bluetide
+        volumes: 
+            - ./wordpress:/var/www/html/wp-content
+    ## Django Image setup
+    django:
+        build: './images/django'
+        container_name: django_container
+        command: python manage.py runserver 0.0.0.0:80
+        volumes: 
+            - ./django:/espaciocivico_guia
+        expose:
+            - "80"
+        depends_on: 
+            - db
