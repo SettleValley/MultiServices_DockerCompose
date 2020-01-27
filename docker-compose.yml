@@ -1,6 +1,12 @@
 version: '3'
 services:
-
+    reverseproxy:
+        image: reverseproxy:latest
+        ports:
+            - 8082:8000
+            - 8081:5000
+        restart: always
+    # Wordpress DB
     mysql:
         image: mysql:latest
         command: --default-authentication-plugin=mysql_native_password
@@ -10,7 +16,7 @@ services:
             - "3306"
         restart: unless-stopped
         volumes: 
-            - db_data:/var/lib/mysql
+            - ./db_data:/var/lib/mysql
             - ./mysqldata:/var/lib/mysql:rw,delegated
             # - ./db.sql:/docker-entrypoint-initdb.d/dump.sql
         environment: 
@@ -18,7 +24,7 @@ services:
             MYSQL_DATABASE: bluetide
             MYSQL_USER: bluetide
             MYSQL_PASSWORD: bluetide
-    ## Database MYSQL
+    ## Django DB
     db:
         image: postgres:latest
 
@@ -27,9 +33,12 @@ services:
         image: wordpress:latest
         container_name: wordpress_container
         restart: unless-stopped
+        expose: 
+            - "80"
         ports: 
             - 5000:80
         depends_on: 
+            - reverseproxy
             - mysql
         environment:
             WORDPRESS_DB_HOST: mysql:3306
@@ -45,11 +54,12 @@ services:
         command: python manage.py runserver 0.0.0.0:8000
         volumes: 
             - ./django:/espaciocivico_guia
-        ports: 
-            - 8000:8000
+        # ports: 
+        #     - 8000:8000
         expose:
             - "8000"
-        depends_on: 
+        depends_on:
+            - reverseproxy 
             - db
 volumes:
     db_data:
