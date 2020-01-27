@@ -75,12 +75,11 @@ WSGI_APPLICATION = 'espaciocivico.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'espaciocivico_django_db',
-        'USER': 'bluetide',
-        'PASSWORD': 'bluetide',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
         'HOST': 'db',
-        'PORT': 3306
+        'PORT': 5432
         # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
